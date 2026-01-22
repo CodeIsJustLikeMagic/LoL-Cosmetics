@@ -1,0 +1,167 @@
+{
+    "omniverse-keywords": ["!Worlds"],
+    "multiverses": [{
+        "name": "Winter",
+        "universes": ["Glacial", "Tales of Borealis", "Winter Sports", "Blackfrost", "Snowdown"],
+        "wards": ["!Astronaut Poro Ward", "!Gentleman Poro Ward"]
+    },
+    {
+        "name": "Spooky",
+        "universes": ["Death Sworn", "Bloodstone", "Neighborhood Nightmare", "Tales from the Rift", "Soulstealer", "Demonic", "Moons of Ionia", "Zombie VS Slayers", "Sugar Rush"],
+        "keywords": ["Harrowing"]
+    },
+    {
+        "name": "Space",
+        "universes": ["Iron Firmament", "Event Horizon", "Space Groove", "Galactic", "Star Voyagers", "Super Galaxy", "Super Planet Force Savers", "Odyssey"],
+        "keywords": ["Starcall", "Galaxies", "Space", "Astronaut", "Glorious Legend"]
+    },
+    {
+        "name": "Knights",
+        "universes": ["Ye Olde", "Institute of War", "Arclight", "Lancer", "Fallen World", "Versus", "Battle Queens"],
+        "keywords": ["Prestige", "Mysterious Garment","Night & Dawn", "Gentleman", "Victorious", "Glorious Legend"],
+        "wards": ["!Queen Poro Ward", "!KING-ZONE DragonX Ward", "2023 Season Start Ward"]
+    },
+    {
+        "name": "Esports",
+        "universes": ["Esports", "Honor", "Victorious", "Triumphant", "PAX", "Hall of Legends"],
+        "keywords": ["Glorious Legend", "Gaming Fan", "Trophy", "Prestige", "Anniversary", "Championship"]
+    },
+    {
+        "name": "Sci-Fi",
+        "universes": [
+            "AnimaTech", 
+            "Pulsefire", 
+            "PsyOps",
+            "Battlecast", 
+            "Soul Fighter", 
+            "Headhunter", 
+            "Mecha", 
+            "Hextech", 
+            "PROJECT", 
+            "Mecha Kingdoms",
+            "Dreadknights",
+            "War is Heck",
+        "Heavy Metal"],
+        "keywords" : ["Mechs vs. Minions", "Forge God"],
+        "wards": ["Hyperion Ward"]
+    },
+    {
+        "name": "Artists",
+        "universes": ["Riot Records", "Crime City Nightmare", "Concrete Canvas", "Inkshadow Uprising", "Neon Strata"],
+        "keywords": ["Pop Music", "Prestige"]
+    },
+    {
+        "name": "Love",
+        "universes": ["Be Mine", "<3"],
+        "keywords": ["Lover", "Draven"],
+        "wards": ["!Definitely Not A Ward"]
+    },
+    {
+        "name": "High Fantasy_1",
+        "universes": [
+            "Elementalist", 
+            "Winged Reign", 
+            "Star Guardian",
+            "Immortal Journey"],
+        "keywords": ["Luminosity", "Essence Collector", "Rune Enthusiast", "Prestige"],
+        "wards": ["!I.S.R Drone Ward", "!FunPlus Phoenix Ward"]
+    },
+    {
+        "name": "High Fantasy_2",
+        "universes": [
+            "Storycraft",
+            "Shan Hai Scrolls", 
+            "Spirit Blossom",
+            "Order of the Lotus", 
+            "Fables", 
+            "Storybook", 
+            "Folded Edges",
+            "Riftquest",
+            "Four Beasts",
+            "Silver Age"],
+        "keywords": ["Luminosity", "Essence Collector", "Rune Enthusiast", "Prestige"],
+        "wards": ["!I.S.R Drone Ward", "!FunPlus Phoenix Ward", ""]
+    },
+    {
+        "name": "Dark Fantasy",
+        "universes": [
+            "Forsaken Hymn",
+            "Arcana", 
+            "Crystal Rose",
+            "Worldbreaker", 
+            "Magicae Prismatica",
+            "Broken Covenant", 
+            "Sue\u00f1o de Vida", 
+            "Woad Tribe", 
+            "Prehistoric Hunters", 
+            "Fallen World", 
+            "Thunder Lord", 
+            "Cloudedge", 
+            "Fury and Fang",
+            "Arcanists",
+            "Crimson Elite"],
+        "keywords": ["Death Sworn"],
+        "wards": ["World Rune Ward", "Mysterious Arcane Ward"]
+    },
+    {
+        "name": "Dark Waters",
+        "universes": ["Dark Waters", "Forgotten Depths", "Echoes of the Deep"],
+        "keywords": ["Bilgewater"]
+    },
+    {
+        "name": "Cooking",
+        "universes": ["Mealtime Melee", "Culinary Masters", "Cafe Cuties"]
+    },
+    {
+        "name": "Shurima",
+        "universes": ["Guardian of the Sands"],
+        "keywords": ["Shurima"]
+    },
+    {
+        "name": "New Year",
+        "universes": ["Warring Kingdoms", "Lunar New Year"],
+        "wards": ["!Queen Poro Ward"]
+    },
+    {
+        "name": "Summer",
+        "universes": ["Sunkissed Summer"],
+        "keywords": ["!Spirit Blossom"]
+    },
+    {
+        "name": "High Noon",
+        "universes": ["High Noon Gothic", "Highway Heretics"],
+        "keywords": ["Frontier Devil", "Vision of the Fallen"]
+    },
+    {
+      "name": "Adorable Creatures",
+      "universes": ["Monster Tamers", "Definitely Not", "Toy Box", "Bees", "Cats Versus Dogs", "Cottontail"],
+      "keywords": ["April Fool's", "!Versus", "Soak it up", "Puppy", "Poro"]
+    },{
+        "name": "Academy",
+        "universes": ["Academy", "God Weapon"]
+    },
+    {
+    "name": "Kinetex Machina",
+    "universes": ["Kinetex Machina"],
+    "keywords": ["Goal"]
+}],
+    "regions": [
+        {
+            "name": "Ionia",
+            "mutliverses": ["High Fantasy"]
+        },
+        {
+            "name": "Noxus",
+            "keywords": ["Conqueror", "Banner", "Draven", "World Rune"]
+        },
+        {
+            "name": "Piltover",
+            "keywords": ["Hextech"]
+        },
+        {
+            "name": "Darkin",
+            "keywords": ["Visions of the Fallen"],
+            "wards": ["2023 Season Start Ward"]
+        }
+    ]
+}
