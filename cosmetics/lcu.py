@@ -2,10 +2,13 @@ from lcu_driver import Connector
 import json
 from lcu_driver.connection import Connection
 import asyncio
-from cosmetics.skin_selector import SkinSelector, CosmeticDict
+from cosmetics.selection.cosmetic_selector import SkinSelector, CosmeticDict
 import traceback
-import sys
 from pathlib import Path
+import cosmetics.dragon as cdragon
+
+import cosmetics.logging_config as logging_config
+logger = logging_config.get_logger(__name__)
 
 class LCUWrapper:
     PUUID:str = None
@@ -15,7 +18,7 @@ class LCUWrapper:
     last_emote_id:int = -1
     SKIN_SELECTOR: SkinSelector = None
 
-    cache_folder: Path = Path("data/lcu_cache")
+    cache_folder: Path = Path("cache/lcu_cache")
 
     connection: Connection = None
 
@@ -28,49 +31,55 @@ class LCUWrapper:
 
     async def select_champion_skin(self):
         if self.selected_champion_id == 0:
-            print("Random champion skin selection failed. No champion selected.")
+            logger.info("Random champion skin selection failed. No champion selected.")
             return
         selected = self.SKIN_SELECTOR.select_random_skin(self.selected_champion_id, avoid=[self.selected_champ_skin_id])
         if selected:
             await self.set_champion_skin(selected)
         else:
-            print("Random champion skin selection failed.")
+            logger.info("Random champion skin selection failed.")
 
     async def select_ward_skin(self):
         selected = self.SKIN_SELECTOR.select_ward(self.selected_champ_skin_id, self.selected_champion_id, avoid = [self.last_ward_skin_id])
         assert selected is not None, "selected ward should never be None. User should have default ward at least"
         if selected:
-            print("     selected ward:", selected["name"])
+            logger.info("     selected ward:", selected["name"])
             await self.set_ward_skin(selected)
 
     async def select_emote(self):
-        selected =self.SKIN_SELECTOR.select_emote(self.selected_champion_id, avoid = [self.last_ward_skin_id])
+        selected = self.SKIN_SELECTOR.select_emote(self.selected_champion_id, avoid = [self.last_ward_skin_id])
         if selected:
             await self.set_emote(selected)
         else:
-            print("     no emote selected")
+            logger.info("     no emote selected")
     
     async def bann_ward(self):
-        self.SKIN_SELECTOR.bann_ward(self.last_ward_skin_id)
+        ward_skin_id = await self.get_current_ward()
+        self.SKIN_SELECTOR.bann_ward(ward_skin_id)
         await self.select_ward_skin()
     
     async def bann_emote(self):
-        self.SKIN_SELECTOR.bann_emote(self.last_emote_id)
+        emote_id = await self.get_current_emote()
+        self.SKIN_SELECTOR.bann_emote(emote_id)
         await self.select_emote()
     
     async def bann_skin(self):
         self.SKIN_SELECTOR.bann_skin(self.selected_champion_id, self.selected_champ_skin_id)
         await self.select_champion_skin()
 
+    async def favourite_emote(self):
+        emote_id = await self.get_current_emote()
+        self.SKIN_SELECTOR.favourite_emote(emote_id)
+
     # region registered functions
     async def on_champ_select_detected(self, connection: Connection, event):
         try:
             eventData = event.data
             pickPhase = eventData['timer']['phase']
-            #print()
+            #logger.info()
 
-            #print(f"Champ select phase: {pickPhase}")
-            #print("before:", SELECTED_SKIN_ID, SELECTED_CAMPION_ID)
+            #logger.info(f"Champ select phase: {pickPhase}")
+            #logger.info("before:", SELECTED_SKIN_ID, SELECTED_CAMPION_ID)
             
             if pickPhase in ["FINALIZATION", "BAN_PICK"]:
                 my_team = eventData['myTeam']
@@ -83,60 +92,68 @@ class LCUWrapper:
                     self.selected_champ_skin_id = skin # must be done before await , mutex
                     if selected_champion_id != self.selected_champion_id and selected_champion_id != 0:
                         self.selected_champion_id = selected_champion_id
-                        print(f"\n---Champion lock detected (champion {self.selected_champion_id})---")
+                        logger.info(f"---Champion lock detected (champion {self.selected_champion_id})---")
                         await self.select_emote()
 
-                    print(f"\n---Champion skin selection detected (skin {self.selected_champ_skin_id})---")
+                    logger.info(f"---Champion skin selection detected (skin {self.selected_champ_skin_id})---")
                     await self.select_ward_skin()
 
             if pickPhase == "GAME_STARTING":
                 self.selected_champion_id = 0
                 self.selected_champ_skin_id = 0
-            #print("result:", pickPhase, SELECTED_SKIN_ID, SELECTED_CAMPION_ID)
+            #logger.info("result:", pickPhase, SELECTED_SKIN_ID, SELECTED_CAMPION_ID)
         except Exception:
-            traceback.print_exc()
+            traceback.logger.info_exc()
 
     # fired when LCU API is ready to be used
     async def on_connect(self, connection: Connection):
         try:
             self.connection = connection
             self.PUUID
-            print('LCU API is ready to be used.')
+            logger.info('LCU API is ready to be used.')
 
             # check if the user is already logged into his account
-            for _ in range(6):
+            # attemps to load champions for 10 minutes.
+            for _ in range(60):
                 summoner = await self.connection.request('get', '/lol-summoner/v1/current-summoner')
                 if summoner.status == 200:
                     json_data = await summoner.json()
                     self.PUUID = json_data.get("puuid")
-                    print("Logged in as ", json_data.get("gameName"), " PUUID:", self.PUUID)
+                    logger.info(f"Logged in as '{json_data.get("gameName")}' PUUID: {self.PUUID}")
                     try:
+                        # grabs all our skinselector needs.
+                        # data is placed into cache folder.
+                        # so we can run pytests on that.
                         await self.get_ward_skins() # creates lcu_cache/ - 
                         await self.get_champions_big()
                         await self.get_emotes()
+                        cdragon.clear_cache()
+
                         self.SKIN_SELECTOR = SkinSelector() # needs our owned ward info and minimal_skins.json from lcu
+
                         return
                     except DataRetrievalError as e:
-                        print(e,"trying again ...")
+                        logger.info(f"{e} trying again in 10 seconds...")
                 await asyncio.sleep(10)
-            print("Failed to get summoner info after several attempts. Is the client fully loaded?")
+            logger.info("Failed to get summoner info after several attempts. Is the client fully loaded?")
         except Exception:
-            traceback.print_exc()
+            traceback.logger.info_exc()
             
 
     # fired when League Client is closed (or disconnected from websocket)
     async def on_disconnect(self, _):
         try:
             self.connection = None
-            print('The client have been closed!')
+            logger.info('The client has been closed!')
         except Exception:
-            traceback.print_exc()
-    # endregion
+            traceback.logger.info_exc()
+    # endregion registered functions
 
+    # region set api data
     async def set_emote(self, emoteEntry:CosmeticDict, emote_slot:str = "EMOTES_WHEEL_CENTER"):
         emote_id = emoteEntry["id"]
         emote_name = emoteEntry["name"]
-        print(f"LCU - setting emote to {emote_id} '{emote_name}' ... ",end="")
+        logger.info(f"setting emote to {emote_id} '{emote_name}' ... ")
         loadoutContent = {
             'loadout': {
                 emote_slot: {
@@ -146,29 +163,22 @@ class LCUWrapper:
                 }
             }
         }
-        changeLoadout = await self._change_loadout(loadoutContent)
+        changeLoadout = await self._set_loadout(loadoutContent)
         if changeLoadout.status != 200:
-            print("Failed. Status: ", changeLoadout.status)
+            logger.info(f"Failed. Status: {changeLoadout.status}")
         else:
             result = await changeLoadout.json()
             set_id = result["loadout"][emote_slot]["itemId"]
             self.last_emote_id = set_id
             if set_id != emote_id:
-                print("Failed. Emote set ", set_id)
+                logger.info("Failed. Emote set ", set_id)
             else:
-                print("Success.")
-    
-    async def _change_loadout(self, loadoutChange: dict):
-        loadoutAccount = await self.connection.request('get', '/lol-loadouts/v4/loadouts/scope/account')
-        loadoutData = await loadoutAccount.json()
-        loadoutId = loadoutData[0]['id']
-        # see documentation/loadout.json for an example
-        return await self.connection.request('patch', f'/lol-loadouts/v4/loadouts/{loadoutId}', json=loadoutChange)
+                logger.info("Success.")
 
     async def set_ward_skin(self, wardSkinEntry:CosmeticDict):
         wardSkinId = wardSkinEntry['id']
         wardSkinName = wardSkinEntry['name']
-        print(f"LCU - setting ward skin to {wardSkinId} '{wardSkinName}' ... ",end="")
+        logger.info(f"setting ward skin to {wardSkinId} '{wardSkinName}' ... ")
         # change ward skin here
         loadoutContent = {
             'loadout': {
@@ -179,78 +189,100 @@ class LCUWrapper:
                 }
             }
         }
-        changeLoadout = await self._change_loadout(loadoutContent)
+        changeLoadout = await self._set_loadout(loadoutContent)
         if changeLoadout.status != 200:
-            print("Failed. Status: ", changeLoadout.status)
+            logger.info("Failed. Status: ", changeLoadout.status)
         else:
             result = await changeLoadout.json()
             set_id = result["loadout"]["WARD_SKIN_SLOT"]["itemId"]
             self.last_ward_skin_id = set_id
             if set_id != wardSkinId:
-                print("Failed. Ward set ", set_id)
+                logger.info("Failed. Ward set ", set_id)
             else:
-                print("Success.")
+                logger.info("Success.")
+
+    async def _set_loadout(self, loadoutChange: dict):
+        loadoutData = await self.get_endpoint('/lol-loadouts/v4/loadouts/scope/account')
+        loadoutId = loadoutData[0]['id']
+        # see documentation/loadout.json for an example
+        return await self.connection.request('patch', f'/lol-loadouts/v4/loadouts/{loadoutId}', json=loadoutChange)
 
     async def set_champion_skin(self, skinEntry: CosmeticDict):
         champ_selected = await self.connection.request('get', '/lol-champ-select/v1/current-champion')
         if champ_selected.status != 404:
-            print(f"LCU - setting champion skin to {skinEntry["id"]} '{skinEntry["name"]}' ...", end="")
+            logger.info(f"setting champion skin to {skinEntry["id"]} '{skinEntry["name"]}' ...", end="")
             patchContent = {"selectedSkinId": skinEntry["id"] }
             result = await self.connection.request('patch', '/lol-champ-select/v1/session/my-selection', data=patchContent)
             if result.status != 204:
-                print("Failed to set champion skin.", result) # for example 500 Internal Server Error when Skin is not owned
+                logger.info("Failed to set champion skin.", result) # for example 500 Internal Server Error when Skin is not owned
                 return
-            print("Success.")
-            
+            logger.info("Success.")
+    # endregion
+
+    # region get api data
+    async def _get_summonerId(self) -> str:
+        summoner = await self.get_endpoint('/lol-summoner/v1/current-summoner/account-and-summoner-ids')
+        return summoner.get("summonerId")
+    
+    async def get_loadout(self):
+        loadoutData = await self.get_endpoint('/lol-loadouts/v4/loadouts/scope/account')
+        loadoutId = loadoutData[0]['id']
+        # see documentation/loadout.json for an example
+        return await self.get_endpoint(f'/lol-loadouts/v4/loadouts/{loadoutId}')
+    
+    async def get_current_emote(self, emote_slot:str = "EMOTES_WHEEL_CENTER"):
+        loadout = await self.get_loadout()
+        return loadout["loadout"][emote_slot]["itemId"]
+    
+    async def get_current_ward(self):
+        loadout = await self.get_loadout()
+        return loadout["loadout"]["WARD_SKIN_SLOT"]["itemId"]
 
     async def get_ward_skins(self):
-        print("LCU - getting ward_skin_collection")
         summonerId = await self._get_summonerId()
-        
-        result = await self.connection.request('get', f'/lol-collections/v1/inventories/{summonerId}/ward-skins')
-        if result.status != 404:
-            ward_skins_data = await result.json()
-            self.save_json(ward_skins_data, "ward_skin_collection.json")
+        ward_skins_data = await self.cache_endpoint(f'/lol-collections/v1/inventories/{summonerId}/ward-skins', "ward_skin_collection.json")
 
-            my_ward_skins = [ward for ward in ward_skins_data if ward["ownership"]["owned"] or ward["name"] == "Default Ward"]
-            print(len(my_ward_skins), "owned ward skins")
-            self.save_json(my_ward_skins, "owned_ward_skin_collection.json")
-            print("LCU - got ward_skin_collection")
-        else:
-            raise DataRetrievalError("LCU - Fetching ward_skin_collection failed")
+        my_ward_skins = [ward for ward in ward_skins_data if ward["ownership"]["owned"] or ward["name"] == "Default Ward"]
+        logger.info(f"{len(my_ward_skins)} owned ward skins")
+        self._save_json(my_ward_skins, "owned_ward_skin_collection.json")
 
 
     async def get_champions_big(self):
         summonerId = await self._get_summonerId()
+        await self.cache_endpoint(f'/lol-champions/v1/inventories/{summonerId}/champions')
         
-        result = await self.connection.request('get', f'/lol-champions/v1/inventories/{summonerId}/champions')
-        print("get champions big result.status", result.status)
-        if result.status != 404:
-            champion_data = await result.json()
-            print(champion_data)
-
-            self.save_json(champion_data, "champions.json")
-            print("LCU - got champions")
-        else:
-            raise DataRetrievalError("LCU - Fetching champions failed")
-    
-    
-    async def _get_summonerId(self) -> str:
-        summoner = await self.connection.request('get', '/lol-summoner/v1/current-summoner/account-and-summoner-ids')
-        summoner = await summoner.json()
-        return summoner.get("summonerId")
-    
     async def get_emotes(self) -> None:
-        result = await self.connection.request('get', f'/lol-inventory/v1/inventory/emotes')
+        await self.cache_endpoint('/lol-inventory/v1/inventory/emotes')
+
+    async def cache_endpoint(self, endpoint:str, cache_name:str = None) -> dict | None:
+        """
+        Requests endpoint from LCU api and saves result in cache.
+        If no cache_name is provided, save name will be generated from endpoint name
+
+        Raises: 
+            DataRetrievalError
+        """
+        json_data = await self.get_endpoint(endpoint)
+        pretty_name = endpoint.split("/")[-1]
+        if cache_name is None:
+            cache_name = pretty_name+".json"
+        self._save_json(json_data, cache_name)
+        logger.info(f"cached {cache_name}")
+        return json_data
+    
+    async def get_endpoint(self, endpoint:str) -> dict | None:
+        result = await self.connection.request('get', endpoint)
+        
+        pretty_name = "/".join(endpoint.split("/")[-2:])
         if result.status != 404:
-            emotes_data = await result.json()
-
-            self.save_json(emotes_data, "emotes.json")
-            print("LCU - got emotes")
+            json_data = await result.json()
+            logger.info(f"endpoint requested '.../{pretty_name}'")
+            return json_data
         else:
-            raise DataRetrievalError("LCU - Fetching emotes failed.")
+            raise DataRetrievalError(f"Fetching {endpoint} failed")
+    # endregion
 
-    def save_json(self, data:dict, file_name:str) -> None:
+    def _save_json(self, data:dict, file_name:str) -> None:
         out_path = self.cache_folder / file_name
         with out_path.open("w", encoding="utf-8") as f:
             json.dump(data, f, indent=2)

@@ -2,3 +2,12 @@
 __pycache__/
 data
 *.kra
+*.qmlproject.user
+*.pyc
+__pycache__/
+build/
+.qtc_device_xml
+
+*log
+
+cache

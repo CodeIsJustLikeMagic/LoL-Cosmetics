@@ -1,8 +1,11 @@
 import requests
 import json
 from pathlib import Path
+import cosmetics.logging_config as logging_config
+logger = logging_config.get_logger("cDragon")
 
-cache_folder: Path = Path("data/cdragon_cache")
+
+cache_folder: Path = Path("cache/cdragon_cache")
 
 def get_champion_skins():
     return get_cdragon("skins.json", "https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/v1/skins.json")
@@ -28,13 +31,13 @@ def get_summoner_emotes():
 def get_cdragon(file_name:str, url: str) -> dict:
     out_path = cache_folder / file_name
     if Path(out_path).exists():
-        print(f"{out_path} already exists, skipping download")
+        logger.info(f"{out_path} already exists, skipping download")
         with open(out_path, "r") as f:
             return json.load(f)
     try:
         r = requests.get(url, verify=False)
     except requests.exceptions.RequestException as e:
-        print(f"Error fetching {out_path} data: ", e)
+        logger.info(f"Error fetching {out_path} data: ", e)
         return {}
     j = json.loads(r.content)
 
@@ -42,5 +45,11 @@ def get_cdragon(file_name:str, url: str) -> dict:
     with open(out_path, "w") as f:
         json.dump(j, f, indent=2)
 
-    print("Fetched", len(j), f"{out_path} from CommunityDragon")
+    logger.info(f"endpoint requested '.../{url.split("/")[-1]}' -> {out_path}")
     return j
+
+def clear_cache():
+    logger.info("clearing cache")
+    for f in cache_folder.iterdir():
+        if f.is_file():
+            f.unlink()

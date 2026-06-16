@@ -1,7 +1,7 @@
 from pathlib import Path
 import json
 import cosmetics.dragon as cdragon
-import cosmetics.util as util
+import cosmetics.selection.util as util
 
 ChampionSkinDict = dict[str, str| int| list]
 """dict of shape{"id": int, "name": str, "isBase": bool,
@@ -27,24 +27,24 @@ def get_champion_skin_keywords(c_skin):
     keyword = keyword.strip()
     return keyword
 
-def get_champion_skins() -> dict[str: ChampionSkinDict]:
+skin_id_str = str
+def get_champion_skins() -> dict[skin_id_str, ChampionSkinDict]:
     """
     returns a dict of shape: { championId (int) : {skin_id (int): ChampionSkinDict }}
     """
     skinline_per_skin = cdragon.get_champion_skins()
-    skinline_per_skin: dict[str, list] = {skin["id"]: skin["skinLines"]
+    skinline_per_skin: dict[skin_id_str, list] = {skin["id"]: skin["skinLines"]
                         for skin in skinline_per_skin.values()}
     # used to add "skinLines" key
 
     # filter out legacy skinline. It's to messy to be any good
     skinline_per_skin = {sk_id: sk_line for sk_id, sk_line in skinline_per_skin.items() if sk_line != [{"id": 167}]}
 
-    with Path("data/lcu_cache/champions.json").open() as f:
+    with Path("cache/lcu_cache/champions.json").open() as f:
         champions = json.load(f) # includes ownership per skin and chroma
         # list of champ dicts.
         # champ dict:
         #   {"id": int, name:"str", "skins":}
-    print("hey")
     skins = {}
     for champ in champions:
         champ_skins = champ.get("skins", [])
@@ -74,7 +74,7 @@ def get_champion_skins() -> dict[str: ChampionSkinDict]:
             
             skins[skin_id] = skin_entry
         
-    with open("data/debug/skins_debug_minimized.json", "w") as f:
+    with open("cache/debug/skins_debug_minimized.json", "w") as f:
         json.dump(skins, f, indent=2)
     return skins
 

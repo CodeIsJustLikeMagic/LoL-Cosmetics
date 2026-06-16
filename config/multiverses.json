@@ -69,7 +69,6 @@
     {
         "name": "High Fantasy_2",
         "universes": [
-            "Storycraft",
             "Shan Hai Scrolls", 
             "Spirit Blossom",
             "Order of the Lotus", 
@@ -119,7 +118,7 @@
     },
     {
         "name": "New Year",
-        "universes": ["Warring Kingdoms", "Lunar New Year"],
+        "universes": ["Warring Kingdoms", "Lunar New Year", "Storycraft"],
         "wards": ["!Queen Poro Ward"]
     },
     {

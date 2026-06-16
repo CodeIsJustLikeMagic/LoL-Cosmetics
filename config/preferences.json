@@ -1,0 +1,210 @@
+{
+  "banned": {
+    "wards": [],
+    "skins": [],
+    "emotes": [
+      {
+        "id": 3926,
+        "name": "Interesting..."
+      },
+      {
+        "id": 4350,
+        "name": "THAT'S MY OPINION!"
+      },
+      {
+        "id": 3170,
+        "name": "Are You Serious"
+      },
+      {
+        "id": 3711,
+        "name": "It's Water Time"
+      },
+      {
+        "id": 3181,
+        "name": "Get In"
+      },
+      {
+        "id": 3353,
+        "name": "Riku Emote"
+      },
+      {
+        "id": 4448,
+        "name": "Oh! What's This?!"
+      },
+      {
+        "id": 4165,
+        "name": "What a Shock"
+      },
+      {
+        "id": 3145,
+        "name": "Everything is Okay"
+      },
+      {
+        "id": 4046,
+        "name": "9000+"
+      },
+      {
+        "id": 1514,
+        "name": "You Get The Horns"
+      },
+      {
+        "id": 3994,
+        "name": "Blitz Screen Of Damage"
+      },
+      {
+        "id": 1468,
+        "name": "Does Not Compute"
+      },
+      {
+        "id": 3576,
+        "name": "2021 - Split 1 - Platinum"
+      },
+      {
+        "id": 4334,
+        "name": "Woah\u2026Dizzy"
+      },
+      {
+        "id": 3860,
+        "name": "You're Fired."
+      },
+      {
+        "id": 3271,
+        "name": "What the Bread?"
+      },
+      {
+        "id": 3270,
+        "name": "Never Again"
+      },
+      {
+        "id": 3838,
+        "name": "Them Vibes"
+      },
+      {
+        "id": 3272,
+        "name": "Dislike"
+      },
+      {
+        "id": 3354,
+        "name": "Towa Emote"
+      },
+      {
+        "id": 3209,
+        "name": "Haha you fell!"
+      },
+      {
+        "id": 3835,
+        "name": "I Feel Very Attacked!"
+      },
+      {
+        "id": 4277,
+        "name": "Play Time"
+      },
+      {
+        "id": 4670,
+        "name": "Gasp!"
+      },
+      {
+        "id": 3679,
+        "name": "Amused and Confused"
+      },
+      {
+        "id": 3659,
+        "name": "Sentinel Senna"
+      },
+      {
+        "id": 3704,
+        "name": "No Thank You"
+      },
+      {
+        "id": 4421,
+        "name": "On Mute"
+      },
+      {
+        "id": 4215,
+        "name": "Give Me Your Support"
+      },
+      {
+        "id": 3160,
+        "name": "Yikes"
+      }
+    ]
+  },
+  "favourites": {
+    "wards": [],
+    "skins": [],
+    "emotes": [
+      {
+        "id": 10035,
+        "name": "At Last!"
+      },
+      {
+        "id": 10045,
+        "name": "Prudent Pengu"
+      },
+      {
+        "id": 4702,
+        "name": "Robo Heart"
+      },
+      {
+        "id": 4312,
+        "name": "Hangzhou 2022 V"
+      },
+      {
+        "id": 3980,
+        "name": "Yes....?"
+      },
+      {
+        "id": 3356,
+        "name": "Saki Emote"
+      },
+      {
+        "id": 3681,
+        "name": "Surprise!!!"
+      },
+      {
+        "id": 4315,
+        "name": "Hangzhou 2022 VIII"
+      },
+      {
+        "id": 4316,
+        "name": "Hangzhou 2022 IX"
+      },
+      {
+        "id": 4310,
+        "name": "Hangzhou 2022 III"
+      },
+      {
+        "id": 1464,
+        "name": "Clean"
+      },
+      {
+        "id": 3140,
+        "name": "Dressed to Kill"
+      },
+      {
+        "id": 3133,
+        "name": "Hype Kitty"
+      },
+      {
+        "id": 3153,
+        "name": "Bee Happy"
+      },
+      {
+        "id": 10098,
+        "name": "Totally Groovy"
+      },
+      {
+        "id": 4034,
+        "name": "Very Nasus, Much Wow"
+      },
+      {
+        "id": 4561,
+        "name": "Small Rabbit"
+      },
+      {
+        "id": 3137,
+        "name": "Joy Pengu"
+      }
+    ]
+  }
+}

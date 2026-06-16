@@ -1,5 +1,5 @@
 import pytest
-from cosmetics.skin_selector import SkinSelector
+from cosmetics.selection.cosmetic_selector import SkinSelector
 from pathlib import Path
 
 @pytest.fixture(scope="module", autouse=True)
@@ -15,7 +15,7 @@ def test_removed_unavailable_wars(skinselector: SkinSelector):
     assert "Crystalis Motus Ward" not in [w["name"] for w in skins[28024]["wards"]["skin_theme"]]
 
 def test_selection_1(skinselector: SkinSelector):
-    skin = skinselector.get_themed_ward(111018)
+    skin = skinselector._get_themed_ward(111018)
     assert skin is not None
 
 def test_selection_chroma_2(skinselector:SkinSelector):
@@ -48,7 +48,6 @@ def test_banned_emote_2(skinselector:SkinSelector):
 
 def test_choose_skin_with_chroma(skinselector:SkinSelector):
     skins = [skinselector.select_random_skin(25)]
-    print(skins)
 
 def test_base_skin_shoulnt_be_in_universe(skinselector:SkinSelector):
     for skin in skinselector.champ_skins.values():
@@ -59,3 +58,30 @@ def test_base_skin_shoulnt_be_in_universe(skinselector:SkinSelector):
 def test_removed_legacy_skinlines(skinselector:SkinSelector):
     leona_legacy = skinselector.champ_skins[89002]
     assert leona_legacy.get("multiverse") is None
+
+def test_mythmaker_zyra(skinselector:SkinSelector):
+    mythmaker_zyra = skinselector.champ_skins[143036]
+    themed_wards = mythmaker_zyra["wards"]["skin_theme"]
+    wards = [w["name"] for w in themed_wards]
+    assert "Gong Ward" in wards
+    # mythmaker zyra should be in lunar revel universe
+
+def test_pool_part_leona(skinselector:SkinSelector):
+    ppleona = skinselector.champ_skins[89004]
+    themed_wards = ppleona["wards"]["skin_theme"]
+    wards = [w["name"] for w in themed_wards]
+    assert "2025 Spirit Blossom Ward" not in wards
+
+def test_zyra_emote(skinselector:SkinSelector):
+    emote = skinselector.select_emote(143) # zyra
+    assert emote is not None
+    assert emote["id"] in [item["id"] for item in skinselector.config.get_favourites("emotes")]
+    # when selecting zyra all emotes of her are banned. This should fallback on a favourites list
+
+def test_nautilus_selectable_skins(skinselector:SkinSelector):
+    nautilus = 111
+    all_skins = skinselector.champ_skins
+    naut_skins = [skin for skin in all_skins.values() if skin["championId"] == nautilus]
+    assert len(naut_skins) > 0, "There are some nautilus skins in general"
+    assert any(skin.get("isChroma", False) for skin in naut_skins), "Nautilus should have some chromas"
+    assert any(not skin.get("isChroma", False) for skin in naut_skins), "Nautilus should have some none-chroma skins"
