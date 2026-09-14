@@ -2,12 +2,18 @@
 
 **Use more of your League of Legends skins, chromas, emotes, and ward skins!**
 
+<img width="1305" height="841" alt="Screenshot 2026-09-14 153507_" src="https://github.com/user-attachments/assets/326959fa-6017-4c9d-936f-320a898a22f7" />
+
+
 When you lock in a champion or pick a skin, Cosmetics **automatically** selects a matching ward skin and champion emote.
 
 Right-clicking the system tray icon gives you access to:
 - Random Champion Skin: Requests a random skin (including chromas) for your selected champion.
 - Cosmetic Re-rolls: Re-roll your current ward skin or emote.
 - Preference Management: Ban or favorite current cosmetics.
+
+Setup recommendations: adding the Cosmetics.exe to your computers Startup Apps.
+Start the app and drag the system tray icon into the always visible section for faster access.
 
 ## How Ward Selection Works
 
@@ -45,6 +51,14 @@ League Client Update (**LCU**) API:
 
 **Community Dragon**:
 - Serves as the primary data source for skins, ward skins and emotes.
+
+## Work in progress
+
+- More extensive UI.
+- Customization for automatic selection behaviours.
+- Add semi-randomized emote selection for more slots (e.g. select from a list of 'sad' emotes for a specific slot).
+- Select wards skins based on champion region rather than skin theme, usefull for champions where you don't own any skins or as backup for limited ward ownership.
+- Auto select champion or ward skin based on seasonal theme or current event (e.g. summer, winter, worlds, users birthday month).
 
 ## Legal Stuff
 
