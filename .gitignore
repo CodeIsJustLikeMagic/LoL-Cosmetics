@@ -7,6 +7,9 @@ data
 __pycache__/
 build/
 .qtc_device_xml
+dist/
+*.spec
+QT_frontend
 
 *log
 

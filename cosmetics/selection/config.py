@@ -2,19 +2,20 @@ from pathlib import Path
 import json
 import cosmetics.selection.util as util
 from cosmetics.selection.ward_util import CosmeticDict
+from cosmetics.paths import DATA_PATHS
 
 import cosmetics.logging_config as logging_config
 logger = logging_config.get_logger(__name__)
 
 class Config:
-    def __init__(self, config_dir = None):
+    def __init__(self, config_dir: Path | None = None):
         if config_dir is not None:
-            self.config_dir = Path(config_dir)
+            config_dir = Path(config_dir)
         else:
-            config_dir = Path("config")
-        self.multiverses = config_dir/"multiverses.json"
-        self.config_path = config_dir/"preferences.json"
-        self.preferences = self._load_config(self.config_path, 
+            config_dir = DATA_PATHS.config_dir
+        self.multiverses_path = config_dir/"multiverses.json"
+        self.preferences_path = config_dir/"preferences.json"
+        self.preferences = self._load_config(self.preferences_path, 
                                     {"banned" : {"wards" : [],
                                                 "emotes" : [],
                                                 "skins": []},
@@ -24,7 +25,7 @@ class Config:
         self._save_config()
 
     def get_multiverses(self):
-        with Path(self.multiverses).open() as f:
+        with Path(self.multiverses_path).open() as f:
             tweaks = json.load(f)
         return tweaks
     
@@ -73,7 +74,7 @@ class Config:
         self._save_config()
         
     def _save_config(self):
-        with open(self.config_path, "w") as f:
+        with open(self.preferences_path, "w") as f:
             json.dump(self.preferences, f, indent=2)
 
     @staticmethod

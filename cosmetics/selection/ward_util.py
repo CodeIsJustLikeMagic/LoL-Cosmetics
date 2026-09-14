@@ -5,6 +5,7 @@ import re
 import cosmetics.selection.util as util
 import cosmetics.selection.skin_util as skin_util
 import cosmetics.logging_config as logging_config
+from cosmetics.paths import DATA_PATHS
 logger = logging_config.get_logger(__name__)
 
 CosmeticDict = dict[str, int|str]
@@ -45,7 +46,6 @@ def add_ward_keywords(ward_skins, ward_sets):
         keyword = keyword.replace("Ward", "")
         keyword = util.remove_date(keyword)
         keyword = keyword.strip()
-        #logger.info(ward_name, "-", keyword)
         keywords.append(keyword)
         ward["keywords"] = keywords
     return ward_skins
@@ -118,7 +118,7 @@ WardSkinsDict = dict[str, any]
   },
 """
 
-def assign_ward_to_skins(all_champ_skins: dict[str: any], tweaks: dict, debug_cache_path: str) -> tuple[dict[str: skin_util.ChampionSkinDict],  list[WardSkinsDict]]:
+def assign_ward_to_skins(all_champ_skins: dict[str: any], tweaks: dict) -> tuple[dict[str: skin_util.ChampionSkinDict],  list[WardSkinsDict]]:
     """
     Adds a list of wards skins to each champion skin.
     Wards are added based on skin_theme (keyword matching, skinline, universe and multiverse sets)
@@ -267,11 +267,10 @@ def assign_ward_to_skins(all_champ_skins: dict[str: any], tweaks: dict, debug_ca
             
 
     ## debug ##
-    Path(debug_cache_path).mkdir(exist_ok=True)
-    with open(f"{debug_cache_path}/skins_debug.json", "w") as f:
+    with (DATA_PATHS.debug_cache / "skins_debug.json").open("w") as f:
         json.dump(all_champ_skins, f, indent=2)
 
-    with open(f"{debug_cache_path}/mutliverse_debug.json","w") as f:
+    with (DATA_PATHS.debug_cache / "mutliverse_debug.json").open("w") as f:
         json.dump(tweaks, f, indent=2)
 
     all_ward_skins_by_id = {s["id"]: s for s in all_ward_skins}
@@ -283,7 +282,7 @@ def assign_ward_to_skins(all_champ_skins: dict[str: any], tweaks: dict, debug_ca
         for w in not_used:
             logger.info(f"    w - {all_ward_skins_by_id[w]['name']}")
 
-    with open(f"{debug_cache_path}/universes_merged.json", "w") as f:
+    with (DATA_PATHS.debug_cache/ "universes_merged.json").open("w") as f:
         json.dump(all_universes, f, indent=2)
     
 
@@ -291,7 +290,7 @@ def assign_ward_to_skins(all_champ_skins: dict[str: any], tweaks: dict, debug_ca
 
 def remove_not_owned(champ_skins: dict[str, skin_util.ChampionSkinDict], all_ward_skins: list[WardSkinsDict]) -> tuple[dict[str, skin_util.ChampionSkinDict],  list[WardSkinsDict]]:
     # remove unowned skins
-    with Path(f"cache/lcu_cache/ward_skin_collection.json").open() as f:
+    with Path(DATA_PATHS.lcu_cache / "ward_skin_collection.json").open() as f:
         ward_ownership = json.load(f)
     owned_ward_ids = [w["id"] for w in ward_ownership if w["ownership"]["owned"] or w["id"] == 0]
     all_ward_skins = [w for w in all_ward_skins if w["id"] in owned_ward_ids]

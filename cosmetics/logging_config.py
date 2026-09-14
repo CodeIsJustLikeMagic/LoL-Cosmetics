@@ -1,6 +1,11 @@
 import logging
 
+from pathlib import Path
+from logging.handlers import TimedRotatingFileHandler
+from cosmetics.paths import DATA_PATHS
+
 base_name = "cosmetics"
+
 def setup_logging():
     # Silence root (and all libraries like PIL)
     logging.getLogger().setLevel(logging.WARNING)
@@ -11,7 +16,13 @@ def setup_logging():
     formatter = logging.Formatter("%(asctime)s [%(levelname)s]: %(name)s - %(message)s")
 
     # File handler
-    file_handler = logging.FileHandler("variety.log", mode="w")
+
+    file_handler = TimedRotatingFileHandler(
+        str(DATA_PATHS.log_folder / "cosmetics.log"),
+        when="midnight",
+        interval=1,
+        backupCount=3
+    )
     file_handler.setFormatter(formatter)
 
     # Console handler

@@ -1,11 +1,10 @@
 import pystray
-from PIL import Image, ImageDraw
-import time
+from PIL import Image
 import asyncio
 from cosmetics.lcu import LCUWrapper
 import threading
-
 import cosmetics.logging_config as logging_config
+from cosmetics.paths import DATA_PATHS
 
 logging_config.setup_logging()
 logger = logging_config.get_logger()
@@ -51,7 +50,7 @@ def on_random_skin(tray_app, item):
 def on_bann_skin(tray_app, item):
     run_lcu_function(LCU_wrapper.bann_skin)
 
-icon_image = Image.open("assets/icon.png") 
+icon_image = Image.open(str(DATA_PATHS.assets_path/"icon.png"))
 def quit_action(tray_app, item):
     logger.info("Buh Bye!")
     LCU_wrapper.connector.stop()
@@ -77,9 +76,9 @@ if __name__ == "__main__":
     lcu_thread.start()
 
     tray_app = pystray.Icon(
-        name='Varie-T',
+        name='Cosmetics',
         icon = icon_image,
-        title="Varie-T",
+        title="Cosmetics",
         menu=tray_menu
     )
 

@@ -2,6 +2,7 @@ from pathlib import Path
 import json
 import cosmetics.dragon as cdragon
 import cosmetics.selection.util as util
+from cosmetics.paths import DATA_PATHS
 
 ChampionSkinDict = dict[str, str| int| list]
 """dict of shape{"id": int, "name": str, "isBase": bool,
@@ -40,7 +41,7 @@ def get_champion_skins() -> dict[skin_id_str, ChampionSkinDict]:
     # filter out legacy skinline. It's to messy to be any good
     skinline_per_skin = {sk_id: sk_line for sk_id, sk_line in skinline_per_skin.items() if sk_line != [{"id": 167}]}
 
-    with Path("cache/lcu_cache/champions.json").open() as f:
+    with Path(DATA_PATHS.lcu_cache/"champions.json").open() as f:
         champions = json.load(f) # includes ownership per skin and chroma
         # list of champ dicts.
         # champ dict:
@@ -73,8 +74,9 @@ def get_champion_skins() -> dict[skin_id_str, ChampionSkinDict]:
                 skin_entry["chromas"] = chromas
             
             skins[skin_id] = skin_entry
-        
-    with open("cache/debug/skins_debug_minimized.json", "w") as f:
+
+    p = Path(DATA_PATHS.debug_cache / "skins_debug_minimized.json")
+    with p.open("w") as f:
         json.dump(skins, f, indent=2)
     return skins
 

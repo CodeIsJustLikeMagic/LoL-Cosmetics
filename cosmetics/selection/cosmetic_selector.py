@@ -19,28 +19,26 @@ class SelectionMode(enum.Enum):
     FAVOURITES = 5
 
 skin_id = str
-class SkinSelector:
+class CosmeticSelector:
     selection_mode = SelectionMode.SKIN_THEME
 
-    debug_path = Path("cache/debug")
-
     def __init__(self, config_dir: Path|None = None):
+        logger.info("initializing")
         self.config = Config(config_dir)
         multiverses = self.config.get_multiverses()
-        logger.info("SkinSelector - initializing")
         
         ## grab data ##
         all_champ_skins: dict[skin_id, skin_util.ChampionSkinDict] = skin_util.get_champion_skins()
-        self.champ_skins, self.all_ward_skins = ward_util.assign_ward_to_skins(all_champ_skins, multiverses, self.debug_path)
+        self.champ_skins, self.all_ward_skins = ward_util.assign_ward_to_skins(all_champ_skins, multiverses)
         self.champ_skins, self.all_ward_skins = ward_util.remove_not_owned(self.champ_skins, self.all_ward_skins)
         logger.info(f"user owned wards: {len(self.all_ward_skins)}")
 
         self.skins_per_champ = skin_util.get_selectable_champion_skins(self.champ_skins)
-        self.all_emotes, self.emotes_per_champ = emote_util.get_emotes_per_champ_id(self.debug_path)
+        self.all_emotes, self.emotes_per_champ = emote_util.get_emotes_per_champ_id()
 
         logger.info(f"user owned emotes: {len(self.all_emotes)}")
 
-        logger.info("SkinSelector - ready!")
+        logger.info("ready!")
     
     def select_ward(self, champ_skin_id, champion_id, avoid: list[int] = [], skin_selection_mode: SelectionMode |None = None) -> CosmeticDict:
         banned = self.config.get_banned("wards")
@@ -121,30 +119,30 @@ class SkinSelector:
         return self._choose_from(available_emotes, avoid, banned)
     
     def _get_champion_emote(self, champion_id, avoid: list[int] = [], banned: list[int] = []):
-        logger.info(f"Selecting emote for champion {champion_id}. Avoiding emote: {avoid}. Banned {banned} ", end="")
+        logger.info(f"Selecting emote for champion {champion_id}. Avoiding emote: {avoid}. Banned {banned} ")
         available_emotes = self.emotes_per_champ.get(champion_id, [])
         logger.info(f"Available: {len(available_emotes)} - {[e["name"] for e in available_emotes]}")
         return self._choose_from(available_emotes, avoid, banned)
 
     def bann_emote(self, emote_id:int):
-        logger.info("bann emote with id", emote_id)
+        logger.info(f"bann emote with id {emote_id}")
         self.config.bann_cosmetic(emote_id, "emotes", self.all_emotes)
     
     def bann_ward(self, ward_id:int):
-        logger.info("bann ward with id", ward_id)
+        logger.info(f"bann ward with id {ward_id}")
         self.config.bann_cosmetic(ward_id, self.all_ward_skins, "wards")
     
     def bann_skin(self, chamipon_id, skin_id:int):
-        logger.info("bann skin with id", skin_id)
+        logger.info(f"bann skin with id {skin_id}")
         skins_of_champion = self.skins_per_champ.get(chamipon_id, [])
         self.config.bann_cosmetic(skin_id, skins_of_champion, "skins")
 
     def favourite_emote(self, ward_id:int):
-        logger.info("favourite emote with id ", ward_id)
+        logger.info(f"favourite emote with id {ward_id}")
         self.config.favourite_cosmetic(ward_id, "emotes", self.all_emotes)
     
     def select_random_skin(self, champion_id, avoid: list[int]= []) -> CosmeticDict | None:
-        logger.info(f"Selecting skin for champion {champion_id}. Avoiding skins: {avoid}. ", end="")
+        logger.info(f"Selecting skin for champion {champion_id}. Avoiding skins: {avoid}. ")
         
         available_skins = self.skins_per_champ.get(champion_id, [])
         logger.info(f"Available: {len(available_skins)}")
@@ -172,6 +170,6 @@ class SkinSelector:
 
 if __name__ == "__main__":
 
-    s = SkinSelector()
+    s = CosmeticSelector()
 
     logger.info(s.select_emote(89))

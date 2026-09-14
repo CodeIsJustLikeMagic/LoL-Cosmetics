@@ -2,9 +2,10 @@ from lcu_driver import Connector
 import json
 from lcu_driver.connection import Connection
 import asyncio
-from cosmetics.selection.cosmetic_selector import SkinSelector, CosmeticDict
+from cosmetics.selection.cosmetic_selector import CosmeticSelector, CosmeticDict
 import traceback
 from pathlib import Path
+from cosmetics.paths import DATA_PATHS
 import cosmetics.dragon as cdragon
 
 import cosmetics.logging_config as logging_config
@@ -16,9 +17,7 @@ class LCUWrapper:
     selected_champ_skin_id:int = 0
     last_ward_skin_id:int = -1
     last_emote_id:int = -1
-    SKIN_SELECTOR: SkinSelector = None
-
-    cache_folder: Path = Path("cache/lcu_cache")
+    COSMETIC_SELECTOR: CosmeticSelector = None
 
     connection: Connection = None
 
@@ -27,27 +26,26 @@ class LCUWrapper:
         self.connector.ws.register('/lol-champ-select/v1/session', event_types=('UPDATE',))(self.on_champ_select_detected)
         self.connector.ready(self.on_connect)
         self.connector.close(self.on_disconnect)
-        self.cache_folder.mkdir(exist_ok=True, parents=True)
 
     async def select_champion_skin(self):
         if self.selected_champion_id == 0:
             logger.info("Random champion skin selection failed. No champion selected.")
             return
-        selected = self.SKIN_SELECTOR.select_random_skin(self.selected_champion_id, avoid=[self.selected_champ_skin_id])
+        selected = self.COSMETIC_SELECTOR.select_random_skin(self.selected_champion_id, avoid=[self.selected_champ_skin_id])
         if selected:
             await self.set_champion_skin(selected)
         else:
             logger.info("Random champion skin selection failed.")
 
     async def select_ward_skin(self):
-        selected = self.SKIN_SELECTOR.select_ward(self.selected_champ_skin_id, self.selected_champion_id, avoid = [self.last_ward_skin_id])
+        selected = self.COSMETIC_SELECTOR.select_ward(self.selected_champ_skin_id, self.selected_champion_id, avoid = [self.last_ward_skin_id])
         assert selected is not None, "selected ward should never be None. User should have default ward at least"
         if selected:
-            logger.info("     selected ward:", selected["name"])
+            logger.info("     selected ward: {selected['name']}")
             await self.set_ward_skin(selected)
 
     async def select_emote(self):
-        selected = self.SKIN_SELECTOR.select_emote(self.selected_champion_id, avoid = [self.last_ward_skin_id])
+        selected = self.COSMETIC_SELECTOR.select_emote(self.selected_champion_id, avoid = [self.last_ward_skin_id])
         if selected:
             await self.set_emote(selected)
         else:
@@ -55,31 +53,27 @@ class LCUWrapper:
     
     async def bann_ward(self):
         ward_skin_id = await self.get_current_ward()
-        self.SKIN_SELECTOR.bann_ward(ward_skin_id)
+        self.COSMETIC_SELECTOR.bann_ward(ward_skin_id)
         await self.select_ward_skin()
     
     async def bann_emote(self):
         emote_id = await self.get_current_emote()
-        self.SKIN_SELECTOR.bann_emote(emote_id)
+        self.COSMETIC_SELECTOR.bann_emote(emote_id)
         await self.select_emote()
     
     async def bann_skin(self):
-        self.SKIN_SELECTOR.bann_skin(self.selected_champion_id, self.selected_champ_skin_id)
+        self.COSMETIC_SELECTOR.bann_skin(self.selected_champion_id, self.selected_champ_skin_id)
         await self.select_champion_skin()
 
     async def favourite_emote(self):
         emote_id = await self.get_current_emote()
-        self.SKIN_SELECTOR.favourite_emote(emote_id)
+        self.COSMETIC_SELECTOR.favourite_emote(emote_id)
 
     # region registered functions
     async def on_champ_select_detected(self, connection: Connection, event):
         try:
             eventData = event.data
             pickPhase = eventData['timer']['phase']
-            #logger.info()
-
-            #logger.info(f"Champ select phase: {pickPhase}")
-            #logger.info("before:", SELECTED_SKIN_ID, SELECTED_CAMPION_ID)
             
             if pickPhase in ["FINALIZATION", "BAN_PICK"]:
                 my_team = eventData['myTeam']
@@ -101,9 +95,8 @@ class LCUWrapper:
             if pickPhase == "GAME_STARTING":
                 self.selected_champion_id = 0
                 self.selected_champ_skin_id = 0
-            #logger.info("result:", pickPhase, SELECTED_SKIN_ID, SELECTED_CAMPION_ID)
         except Exception:
-            traceback.logger.info_exc()
+            logger.error(traceback.print_exc())
 
     # fired when LCU API is ready to be used
     async def on_connect(self, connection: Connection):
@@ -129,11 +122,13 @@ class LCUWrapper:
                         await self.get_emotes()
                         cdragon.clear_cache()
 
-                        self.SKIN_SELECTOR = SkinSelector() # needs our owned ward info and minimal_skins.json from lcu
+                        self.COSMETIC_SELECTOR = CosmeticSelector() # needs our owned ward info and minimal_skins.json from lcu
 
                         return
                     except DataRetrievalError as e:
                         logger.info(f"{e} trying again in 10 seconds...")
+                    except Exception as e:
+                        logger.error(f"on_connect failed: {traceback.print_exc()}")
                 await asyncio.sleep(10)
             logger.info("Failed to get summoner info after several attempts. Is the client fully loaded?")
         except Exception:
@@ -171,7 +166,7 @@ class LCUWrapper:
             set_id = result["loadout"][emote_slot]["itemId"]
             self.last_emote_id = set_id
             if set_id != emote_id:
-                logger.info("Failed. Emote set ", set_id)
+                logger.info(f"Failed. Emote set {set_id}")
             else:
                 logger.info("Success.")
 
@@ -191,13 +186,13 @@ class LCUWrapper:
         }
         changeLoadout = await self._set_loadout(loadoutContent)
         if changeLoadout.status != 200:
-            logger.info("Failed. Status: ", changeLoadout.status)
+            logger.info(f"Failed. Status: {changeLoadout.status}")
         else:
             result = await changeLoadout.json()
             set_id = result["loadout"]["WARD_SKIN_SLOT"]["itemId"]
             self.last_ward_skin_id = set_id
             if set_id != wardSkinId:
-                logger.info("Failed. Ward set ", set_id)
+                logger.info(f"Failed. Ward set {set_id}")
             else:
                 logger.info("Success.")
 
@@ -210,11 +205,11 @@ class LCUWrapper:
     async def set_champion_skin(self, skinEntry: CosmeticDict):
         champ_selected = await self.connection.request('get', '/lol-champ-select/v1/current-champion')
         if champ_selected.status != 404:
-            logger.info(f"setting champion skin to {skinEntry["id"]} '{skinEntry["name"]}' ...", end="")
+            logger.info(f"setting champion skin to {skinEntry["id"]} '{skinEntry["name"]}' ...")
             patchContent = {"selectedSkinId": skinEntry["id"] }
             result = await self.connection.request('patch', '/lol-champ-select/v1/session/my-selection', data=patchContent)
             if result.status != 204:
-                logger.info("Failed to set champion skin.", result) # for example 500 Internal Server Error when Skin is not owned
+                logger.info(f"Failed to set champion skin. {result}") # for example 500 Internal Server Error when Skin is not owned
                 return
             logger.info("Success.")
     # endregion
@@ -283,7 +278,7 @@ class LCUWrapper:
     # endregion
 
     def _save_json(self, data:dict, file_name:str) -> None:
-        out_path = self.cache_folder / file_name
+        out_path = DATA_PATHS.lcu_cache / file_name
         with out_path.open("w", encoding="utf-8") as f:
             json.dump(data, f, indent=2)
 
