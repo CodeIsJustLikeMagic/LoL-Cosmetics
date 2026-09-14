@@ -12,8 +12,9 @@ Right-clicking the system tray icon gives you access to:
 - Cosmetic Re-rolls: Re-roll your current ward skin or emote.
 - Preference Management: Ban or favorite current cosmetics.
 
-Setup recommendations: adding the Cosmetics.exe to your computers Startup Apps.
-Start the app and drag the system tray icon into the always visible section for faster access.
+#### Recommended Setup
+- Add Cosmetics.exe to your compuster's Startup Apps so it runs in the background whenever you boot up.
+- System Tray Visibility: Start the app, click the arrow in your Windows taskbar, and drag the Cosmetics system tray icon into the always-visible section for quick access during Champ Select.
 
 ## How Ward Selection Works
 
@@ -36,11 +37,13 @@ The **central emote slot** is automatically set to a random owned emote featurin
 
 Bans and favorites are saved to `config/preferences.json`, pre-populated with a default list you can edit at any time.
 
-## How Champion Skin Selection Works:
+## How Champion Skin Selection Works
 
-Champion skin selection is not done automatically. You must trigger it via the system tray menu.
-The skin is selected purely randomly from skins owned for the champion. Skins can be banned to remove them from current and future selections.
-If the selected skin has chromas, a random choma is choosen.
+Champion skin selection is **not** done automatically. You trigger it manually via the system tray menu.
+The skin is chosen randomly from owned skins for your locked-in champion. 
+If the selected skin has chromas, a random chroma is picked.
+
+Skins can be banned to exclude them for the current and future random selections.
 
 ## Riot APIs & Data Sources
 
@@ -56,9 +59,10 @@ League Client Update (**LCU**) API:
 
 - More extensive UI.
 - Customization for automatic selection behaviours.
-- Add semi-randomized emote selection for more slots (e.g. select from a list of 'sad' emotes for a specific slot).
-- Select wards skins based on champion region rather than skin theme, usefull for champions where you don't own any skins or as backup for limited ward ownership.
-- Auto select champion or ward skin based on seasonal theme or current event (e.g. summer, winter, worlds, users birthday month).
+- Semi-randomized emote selection for more slots (e.g. select from a list of 'sad' emotes for a specific slot).
+- Region-based ward selection, matching champion's Runterra region as a backup when no themed wards exist or default skin is selected.
+- Auto select champion skin based on seasonal theme or current event (e.g. summer, winter, Worlds, users birthday month).
+- Option to overwrite the ward pool of specific champion skins, where keyword based approach creates undesired results.
 
 ## Legal Stuff
 
