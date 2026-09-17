@@ -11,7 +11,7 @@ Right-clicking the system tray icon gives you access to:
 - Preference Management: Ban or favorite current cosmetics.
 
 #### Recommended Setup
-- Add Cosmetics.exe to your compuster's Startup Apps so it runs in the background whenever you boot up.
+- Add Cosmetics.exe to your computers's Startup Apps so it runs in the background whenever you boot up.
 - System Tray Visibility: Start the app, click the arrow in your Windows taskbar, and drag the Cosmetics system tray icon into the always-visible section for quick access during Champ Select.
 
 ## How Ward Selection Works
@@ -30,8 +30,8 @@ For example the custom "Winter" multiverse combines the Glacial, Tales of Boreal
 
 The **central emote slot** is automatically set to a random owned emote featuring your selected champion (thanks to Riot's emote annotations!).
 - Banning: You can ban unwanted emotes via the system tray menu. Banning re-rolls the emote immediately and excludes it from future picks.
-- Favourite + Fallback Pool: If you don't own any emotes for your selected champion, the app randomly picks from your favorited list.
-- You can ban and favourite emotes outside of champ select. Simply choose the emote to target by setting it as central emote via the League Client Emotes tab. Then ban or favourite in Cosmetics system tray app. Unfortuantly the Riot Client doesn't live-update emotes. You need to switch to a different tab and back to see the effect.
+- Favorite + Fallback Pool: If you don't own any emotes for your selected champion, the app randomly picks from your favorited list.
+- You can ban and favorite emotes outside of champ select. Simply choose the emote to target by setting it as central emote via the League Client Emotes tab. Then ban or favorite in Cosmetics system tray app. Unfortunately the Riot Client doesn't live-update emotes. You need to switch to a different tab and back to see the effect.
 
 Bans and favorites are saved to `config/preferences.json`, pre-populated with a default list you can edit at any time.
 
@@ -56,9 +56,9 @@ League Client Update (**LCU**) API:
 ## Work in progress
 
 - More extensive UI.
-- Customization for automatic selection behaviours.
+- Customization for automatic selection behaviors.
 - Semi-randomized emote selection for more slots (e.g. select from a list of 'sad' emotes for a specific slot).
-- Region-based ward selection, matching champion's Runterra region as a backup when no themed wards exist or default skin is selected.
+- Region-based ward selection, matching champion's Runeterra region as a backup when no themed wards exist or default skin is selected.
 - Auto select champion skin based on seasonal theme or current event (e.g. summer, winter, Worlds, users birthday month).
 - Option to overwrite the ward pool of specific champion skins, where keyword based approach creates undesired results.
 
