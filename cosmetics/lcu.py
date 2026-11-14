@@ -21,11 +21,16 @@ class LCUWrapper:
 
     connection: Connection = None
 
-    def __init__(self):
+    def __init__(self, on_connect_callback = None, on_ready_callback = None, on_disconnect_callback=None, on_error= None):
         self.connector = Connector(loop=asyncio.new_event_loop())
         self.connector.ws.register('/lol-champ-select/v1/session', event_types=('UPDATE',))(self.on_champ_select_detected)
         self.connector.ready(self.on_connect)
         self.connector.close(self.on_disconnect)
+
+        self.on_connect_callback = on_connect_callback
+        self.on_ready_callback = on_ready_callback
+        self.on_disconnect_callback = on_disconnect_callback
+        self.on_error_callback = on_error
 
     async def select_champion_skin(self):
         if self.selected_champion_id == 0:
@@ -104,6 +109,7 @@ class LCUWrapper:
             self.connection = connection
             self.PUUID
             logger.info('LCU API is ready to be used.')
+            self.on_connect_callback() # "Initializing..."
 
             # check if the user is already logged into his account
             # attemps to load champions for 10 minutes.
@@ -112,7 +118,8 @@ class LCUWrapper:
                 if summoner.status == 200:
                     json_data = await summoner.json()
                     self.PUUID = json_data.get("puuid")
-                    logger.info(f"Logged in as '{json_data.get("gameName")}' PUUID: {self.PUUID}")
+                    summoner_name = json_data.get("gameName")
+                    logger.info(f"Logged in as '{summoner_name}' PUUID: {self.PUUID}")
                     try:
                         # grabs all our skinselector needs.
                         # data is placed into cache folder.
@@ -120,17 +127,21 @@ class LCUWrapper:
                         await self.get_ward_skins() # creates lcu_cache/ - 
                         await self.get_champions_big()
                         await self.get_emotes()
-                        cdragon.clear_cache()
+                        cdragon.refresh_cache()
 
                         self.COSMETIC_SELECTOR = CosmeticSelector() # needs our owned ward info and minimal_skins.json from lcu
-
+                        if self.on_ready_callback:
+                            self.on_ready_callback(summoner_name)
                         return
                     except DataRetrievalError as e:
                         logger.info(f"{e} trying again in 10 seconds...")
                     except Exception as e:
-                        logger.error(f"on_connect failed: {traceback.print_exc()}")
+                        logger.exception(f"on_connect failed")
+                        if self.on_error_callback:
+                            self.on_error_callback("Setup failed - see log")
                 await asyncio.sleep(10)
-            logger.info("Failed to get summoner info after several attempts. Is the client fully loaded?")
+            logger.error("Failed to get summoner info after several attempts. Is the client fully loaded?")
+            self.on_error_callback("Failed to get summoner info")
         except Exception:
             traceback.logger.info_exc()
             
@@ -140,8 +151,10 @@ class LCUWrapper:
         try:
             self.connection = None
             logger.info('The client has been closed!')
+            if self.on_disconnect_callback:
+                self.on_disconnect_callback()
         except Exception:
-            traceback.logger.info_exc()
+            logger.exception("on_disconnect")
     # endregion registered functions
 
     # region set api data
