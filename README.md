@@ -1,5 +1,7 @@
 # LoL Cosmetics Selector
 
+**[View Source Code & Releases on GitHub](https://github.com/<user>/<repo>)**
+
 **Use more of your League of Legends skins, chromas, emotes, and ward skins!**
 <img width="1305" height="841" alt="Screenshot 2026-09-14 153507_" src="https://github.com/user-attachments/assets/7e30dd98-800b-43e9-a8c0-29f7591ed718" />
 
